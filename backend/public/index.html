@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National ID Registration</title>
+</head>
+<body>
+
+<h1 style="text-align:center;"> National ID Registration</h1>
+
+<form id="registrationForm">
+  <div class="form-group">
+    <label for="fullName">Full Name</label>
+    <input type="text" id="fullName" placeholder="Enter your full name" />
+    <small class="error" id="fullNameError"></small>
+  </div>
+
+  <div class="form-group">
+    <label for="nationalId">National ID</label>
+    <input type="text" id="nationalId" placeholder="Enter your national ID" />
+    <small class="error" id="nationalIdError"></small>
+  </div>
+
+  <div class="form-group">
+    <label for="dateOfBirth">Date of Birth</label>
+    <input type="date" id="dateOfBirth" />
+    <small class="error" id="dobError"></small>
+  </div>
+
+  <button type="submit" id="registerBtn">Register</button>
+</form>
+
+<style>
+  form {
+    max-width: 400px;
+    margin: 40px auto;
+    font-family: Arial, sans-serif;
+    background: #f9f9f9;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+
+  label {
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  input {
+    padding: 10px;
+    border: 1.5px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+  }
+
+  input:focus {
+    border-color: #007BFF;
+  }
+
+  .error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 3px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+    font-weight: bold;
+    color: white;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+</style>
+
+<script>
+const form = document.getElementById("registrationForm");
+const fullNameInput = document.getElementById("fullName");
+const nationalIdInput = document.getElementById("nationalId");
+const dobInput = document.getElementById("dateOfBirth");
+
+// Validation functions
+function validateFullName() {
+  const value = fullNameInput.value.trim();
+  if (!/^[A-Za-z\s]{3,}$/.test(value)) {
+    document.getElementById("fullNameError").innerText =
+      "Full Name must be at least 3 letters and contain only letters/spaces.";
+    return false;
+  }
+  document.getElementById("fullNameError").innerText = "";
+  return true;
+}
+
+function validateNationalId() {
+  const value = nationalIdInput.value.trim();
+  if (!/^\d{8,12}$/.test(value)) {
+    document.getElementById("nationalIdError").innerText =
+      "National ID must be 8-12 digits.";
+    return false;
+  }
+  document.getElementById("nationalIdError").innerText = "";
+  return true;
+}
+
+function validateDOB() {
+  const value = dobInput.value;
+  if (!value) {
+    document.getElementById("dobError").innerText =
+      "Please enter Date of Birth.";
+    return false;
+  }
+
+  const dob = new Date(value);
+  const today = new Date();
+
+  if (dob > today) {
+    document.getElementById("dobError").innerText =
+      "Date of Birth cannot be in the future.";
+    return false;
+  }
+
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+  if (age < 18) {
+    document.getElementById("dobError").innerText =
+      "You must be at least 18 years old.";
+    return false;
+  }
+
+  document.getElementById("dobError").innerText = "";
+  return true;
+}
+
+// Submit
+form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  const isValid =
+    validateFullName() &&
+    validateNationalId() &&
+    validateDOB();
+
+  if (!isValid) return;
+
+  try {
+    const res = await fetch("http://localhost:5000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: fullNameInput.value.trim(),
+        nationalId: nationalIdInput.value.trim(),
+        dateOfBirth: dobInput.value
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    alert("Registration successful!");
+    form.reset();
+
+  } catch (err) {
+    alert("Server error. Please try again.");
+  }
+});
+</script>
+
+</body>
+</html>
