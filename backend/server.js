@@ -7,16 +7,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Serve your HTML/CSS/JS from public folder
+// Serve static files from public folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// ================= REGISTER ENDPOINT =================
 app.post("/register", (req, res) => {
   const { fullName, nationalId, dateOfBirth } = req.body;
-
   console.log("Received registration:", { fullName, nationalId, dateOfBirth });
 
-  // Validation
   if (!/^[A-Za-z ]{2,}$/.test(fullName)) {
     return res.status(400).json({ message: "Full Name must be letters only" });
   }
@@ -30,7 +27,6 @@ app.post("/register", (req, res) => {
   res.json({ message: "Registration successful", data: { fullName, nationalId, dateOfBirth } });
 });
 
-// ================= START SERVER =================
 app.listen(5000, () => {
   console.log("National ID Server Running on http://localhost:5000");
 });
